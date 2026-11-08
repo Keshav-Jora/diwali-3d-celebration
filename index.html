@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>The Grand Diwali Celebration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#e9bd70;--cream:#fff0cf;--ink:#080d20;--glass:rgba(13,18,35,.76)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080d20;color:var(--cream);font-family:'DM Sans',sans-serif}
+#scene{position:fixed;inset:0}canvas{display:block}
+.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 35%,rgba(2,5,16,.36) 100%);z-index:2}
+.top{position:fixed;z-index:5;top:22px;left:26px;right:26px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.brand{font:600 12px Cinzel,serif;letter-spacing:.22em;color:#e9bd70;text-shadow:0 0 18px #e5a54b}
+.pill{pointer-events:auto;border:1px solid #d7b16c66;background:#10182bbd;color:#ffe8bb;border-radius:30px;padding:10px 15px;font-size:12px;backdrop-filter:blur(12px);cursor:pointer}
+.hud{position:fixed;z-index:5;left:26px;bottom:24px;display:flex;gap:10px;align-items:center}
+.progress{background:var(--glass);border:1px solid #d7b16c55;border-radius:16px;padding:12px 15px;backdrop-filter:blur(14px);font-size:12px}
+.progress strong{color:var(--gold);font-size:16px;margin-right:5px}
+.hint{position:fixed;z-index:4;bottom:32px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.1em;color:#f5dfb6a8;text-align:center;pointer-events:none;white-space:nowrap}
+.controls{position:fixed;z-index:5;right:26px;bottom:24px;display:flex;gap:8px}
+button{font-family:inherit}
+.overlay{position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;background:#050916b9;backdrop-filter:blur(9px);padding:18px}
+.panel{width:min(520px,94vw);border:1px solid #d7b16c77;border-radius:22px;background:linear-gradient(145deg,#17213aee,#090f21f5);box-shadow:0 25px 90px #000a;padding:28px;text-align:center}
+.kicker{font:600 10px Cinzel,serif;letter-spacing:.25em;color:var(--gold)}
+h1,h2{font-family:Cinzel,serif;font-weight:500}h2{font-size:25px;margin:10px 0;color:#fff0cf}
+.panel p{font-size:13px;line-height:1.7;color:#d6c8ae}
+.primary{background:linear-gradient(120deg,#f3d28e,#bd8740);color:#241707;border:0;border-radius:30px;padding:12px 22px;font-weight:700;cursor:pointer;margin:8px}
+.secondary{background:#ffffff0d;color:#f7dfb1;border:1px solid #d7b16c66;border-radius:30px;padding:11px 18px;cursor:pointer;margin:8px}
+.gamegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px auto;max-width:340px}
+.tile{aspect-ratio:1;border:1px solid #d7b16c77;border-radius:12px;background:linear-gradient(145deg,#36415a,#151e35);color:#ffe2a0;font-size:25px;cursor:pointer}
+.tile.done{background:linear-gradient(145deg,#986a2d,#543719);box-shadow:0 0 20px #e8b45c77}
+.sequence{display:flex;justify-content:center;gap:10px;margin:18px}.lamp{font-size:30px;opacity:.45}.lamp.on{opacity:1;filter:drop-shadow(0 0 12px #ffb84d)}
+#toast{position:fixed;z-index:20;left:50%;top:85px;transform:translateX(-50%);padding:10px 16px;border:1px solid #d7b16c66;border-radius:30px;background:#10182be8;color:#ffe9c2;font-size:12px;opacity:0;transition:.3s;pointer-events:none}
+#intro{position:fixed;z-index:8;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;background:radial-gradient(ellipse at center,#1b2340 0%,#080d20 72%);transition:opacity 1.2s}
+.introbox{padding:24px}.introbox .eyebrow{font:600 11px Cinzel;letter-spacing:.3em;color:#e8bb72}
+.introbox h1{font-size:clamp(36px,7vw,76px);line-height:1.1;margin:16px 0;color:#fff0d0;text-shadow:0 0 35px #d89d4a66}
+.introbox p{color:#d8c7a5;font-size:14px;letter-spacing:.06em}
+@media(max-width:600px){.top{top:14px;left:14px;right:14px}.hud{left:12px;bottom:14px}.controls{right:12px;bottom:14px}.hint{bottom:75px;width:90%;white-space:normal}.brand{font-size:10px}.pill{padding:9px 11px}.panel{padding:22px 16px}}
+</style></head>
+<body>
+<div id="scene"></div><div class="vignette"></div>
+<div id="intro"><div class="introbox"><div class="eyebrow">A FESTIVAL OF LIGHT</div><h1>The Courtyard<br>of Light</h1><p>A living courtyard of light, colour, sound and celebration.</p><button class="primary" id="enter">IGNITE THE FIRST DIYA ✦</button></div></div>
+<div class="top"><div class="brand">✦ DEEPAVALI · 2026</div><button class="pill" id="sound">♫ SOUND ON</button></div>
+<div class="hud"><div class="progress"><strong id="count">0 / 4</strong> gates awakened</div></div>
+<div class="hint" id="hint">TAP TO BEGIN · DRAG TO EXPLORE · SOUND STARTS AFTER YOUR TAP</div>
+<div class="controls"><button class="pill" id="greeting">✦ Greeting</button><button class="pill" id="lanterns">🏮 Lanterns</button><button class="pill" id="fireworks">✧ Celebrate</button><button class="pill" id="cameraReset">◎ View</button><button class="pill" id="photo">▣ Photo</button><button class="pill" id="full">⛶</button><button class="pill" id="reset">↻ Reset</button></div>
+<div id="toast"></div>
+<div class="overlay" id="greetingModal"><div class="panel feature-panel">
+ <div class="kicker">DIWALI GREETING STUDIO</div><h2>Personal Diwali Greeting</h2>
+ <p>Make a festive greeting with your name and download it.</p><div id="greetingBody"></div>
+ <button class="secondary" id="greetingClose">Back to courtyard</button>
+</div></div>
+
+<div class="overlay" id="modal"><div class="panel"><div class="kicker" id="gamekicker">A COURTYARD CHALLENGE</div><h2 id="gametitle">The Lightkeeper's Trial</h2><p id="gamedesc">Complete the challenge to awaken this gate.</p><div id="gamearea"></div><div><button class="secondary" id="close">Return to courtyard</button></div></div></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const host=document.querySelector('#scene');
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x080d20);scene.fog=new THREE.FogExp2(0x080d20,.025);
+const camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,150);camera.position.set(0,5.6,14.5);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor(0x080d20,1);host.appendChild(renderer.domElement);
+renderer.domElement.style.touchAction='none';
+const hemi=new THREE.HemisphereLight(0x9aaedc,0x3b2415,1.35);scene.add(hemi);
+const moon=new THREE.DirectionalLight(0x9eb9ff,2.1);moon.position.set(-7,12,6);moon.castShadow=true;scene.add(moon);
+const warm=new THREE.PointLight(0xffa94f,2.2,22);warm.position.set(0,4,0);scene.add(warm);
+const mat=(c,rough=.8,metal=0)=>new THREE.MeshStandardMaterial({color:c,roughness:rough,metalness:metal});
+const stone=mat(0x756451),darkStone=mat(0x3c3540),gold=mat(0xb98a45,.34,.72),goldLight=mat(0xf4d18b,.3,.55),wood=mat(0x4b241b,.5),floorMat=mat(0x55483d);
+function box(parent,x,y,z,sx,sy,sz,m){const o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o}
+function cyl(parent,x,y,z,r1,r2,h,m,seg=32){const o=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,seg),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o}
+const floor=box(scene,0,-.25,0,22,.5,18,floorMat);
+for(let x of [-9,-6,6,9]){box(scene,x,2.1,-7.5,.65,4.2,.65,stone);box(scene,x,4.3,-7.5,.95,.3,.95,gold)}
+box(scene,0,4.5,-7.5,18,.5,.65,stone);box(scene,0,3.9,-7.5,18,.12,.72,gold);
+for(let x of [-9,9]){box(scene,x,2.1,0,.65,4.2,15,stone)}
+// ornate rear arches and side niches
+for(let x of [-5.8,-2.0,2.0,5.8]){
+ box(scene,x,1.8,-7.1,.24,3.6,.3,gold);
+ const arch=new THREE.Mesh(new THREE.TorusGeometry(1.05,.16,12,48,Math.PI),gold);arch.position.set(x,3.4,-7.12);arch.rotation.z=Math.PI;scene.add(arch);
+ box(scene,x,0.18,-7.1,2.4,.3,.55,darkStone);
+}
+for(let z of [-4,0,4])for(let x of [-8.65,8.65]){cyl(scene,x,1.8,z,.48,.62,3.6,stone);cyl(scene,x,3.7,z,.72,.5,.25,gold);cyl(scene,x,0,z,.75,.75,.25,darkStone)}
+// rangoli concentric mandala
+const rangoli=new THREE.Group();rangoli.position.set(0,.015,1.3);scene.add(rangoli);
+const colors=[0xb33b36,0xe2b74f,0xe9e0c9,0x315c83,0x9d5435];
+for(let i=0;i<5;i++){const ring=new THREE.Mesh(new THREE.RingGeometry(1.05+i*.48,1.16+i*.48,96),mat(colors[i],.75));ring.rotation.x=-Math.PI/2;rangoli.add(ring)}
+for(let i=0;i<16;i++){const a=i*Math.PI/8;const pet=new THREE.Mesh(new THREE.CircleGeometry(.38,24),mat(colors[i%5]));pet.rotation.x=-Math.PI/2;pet.position.set(Math.cos(a)*1.25,.025,Math.sin(a)*1.25);rangoli.add(pet)}
+const center=cyl(rangoli,0,.03,0,.45,.45,.05,goldLight,48);center.rotation.x=0;
+// stars
+const starGeo=new THREE.BufferGeometry(),positions=[];for(let i=0;i<700;i++)positions.push((Math.random()-.5)*60,Math.random()*25+2,-Math.random()*35-5);
+starGeo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0xffe6b2,size:.055,transparent:true,opacity:.85}));scene.add(stars);
+// diyas
+const diyas=[];const flameMat=new THREE.MeshBasicMaterial({color:0xffbd54});const flameCore=new THREE.MeshBasicMaterial({color:0xfff0ad});
+function diya(x,z,scale=1){const g=new THREE.Group();g.position.set(x,.02,z);g.scale.setScalar(scale);scene.add(g);
+ const bowl=new THREE.Mesh(new THREE.SphereGeometry(.34,24,12,0,Math.PI*2,0,Math.PI/2),mat(0x9d5128));bowl.scale.y=.55;g.add(bowl);
+ const oil=cyl(g,0,.08,0,.22,.22,.025,mat(0x4c281b));const f=new THREE.Mesh(new THREE.ConeGeometry(.105,.42,16),flameMat);f.position.y=.37;g.add(f);
+ const c=new THREE.Mesh(new THREE.SphereGeometry(.055,12,12),flameCore);c.position.y=.4;g.add(c);
+ const light=new THREE.PointLight(0xff9b3d,0,3.8);light.position.y=.45;g.add(light);
+ diyas.push({g,f,light,lit:false});return g}
+for(let x=-7;x<=7;x+=2.3){diya(x,5,.8);diya(x,-5,.8)}
+const hero=diya(0,3,1.45);const heroD=diyas[diyas.length-1];
+// lanterns
+for(let x of [-7.5,7.5]){const g=new THREE.Group();g.position.set(x,3.7,-3);scene.add(g);cyl(g,0,-.5,0,.45,.45,.12,gold);cyl(g,0,-.12,0,.3,.3,.65,mat(0xc47737,.35,.3));cyl(g,0,.25,0,.42,.42,.12,gold);const l=new THREE.PointLight(0xffa34b,2.5,8);l.position.y=-.1;g.add(l);}
+// gate objects in courtyard foreground edges
+const gates=[];const gateDefs=[{x:-6.2,z:0,name:'The Memory Gate',desc:'Remember the sequence of five glowing diyas.'},{x:-2.1,z:-1.1,name:'The Rhythm Gate',desc:'Tap the glowing rangoli at just the right moment.'},{x:2.1,z:-1.1,name:'The Mithai Gate',desc:'Find all four matching pairs of festive sweets.'},{x:6.2,z:0,name:'The Path of Light',desc:'Connect five diyas in the correct order.'}];
+function makeGate(d,i){const g=new THREE.Group();g.position.set(d.x,.05,d.z);scene.add(g);box(g,0,1.5,0,1.45,3,.25,wood);box(g,0,3.1,0,1.7,.22,.45,gold);box(g,0,.12,0,1.7,.24,.5,gold);
+ const arch=new THREE.Mesh(new THREE.TorusGeometry(.72,.12,10,32,Math.PI),gold);arch.position.set(0,2.7,.02);arch.rotation.z=Math.PI;g.add(arch);
+ for(let k=-1;k<=1;k+=2){box(g,k*.56,1.5,.18,.08,2.7,.08,gold);cyl(g,k*.28,1.5,.22,.07,.07,.06,goldLight)}
+ const lock=cyl(g,0,1.55,.28,.18,.18,.1,goldLight,24);lock.rotation.x=Math.PI/2;
+ const glow=new THREE.PointLight(0xffb94e,0,4);glow.position.set(0,1.5,1);g.add(glow);
+ gates.push({g,glow,open:false,data:d,index:i});}
+gateDefs.forEach(makeGate);
+
+// Architectural detailing: stone courses, carved capitals, floor borders and brass inlay.
+const trimMat=mat(0x9a7950,.48,.45), marble=mat(0x827969,.42,.12), inlay=mat(0xc49a58,.28,.72);
+for(let z=-7;z<=7;z+=2){
+  box(scene,0,-.005,z,19,.035,.055,trimMat);
+}
+for(let x=-9;x<=9;x+=2){
+  box(scene,x,-.002,0,.045,.035,15,trimMat);
+}
+for(let x of [-9,-6,6,9]){
+  box(scene,x,3.78,-7.45,.95,.16,.92,trimMat);
+  box(scene,x,2.2,-7.45,.83,.18,.83,marble);
+  for(let y of [.55,1.05,2.9,3.45]){
+    const band=box(scene,x,y,-7.5,.7,.055,.7,inlay);
+  }
+}
+for(let x of [-8.5,8.5]) for(let z of [-5.5,-1.5,2.5,5.5]){
+  const pl=new THREE.Group();pl.position.set(x,.02,z);scene.add(pl);
+  cyl(pl,0,.22,0,.5,.42,.42,darkStone);
+  cyl(pl,0,.48,0,.39,.48,.12,gold);
+  for(let k=0;k<7;k++){
+    const a=k*Math.PI*2/7;
+    const leaf=new THREE.Mesh(new THREE.SphereGeometry(.22,12,10),mat(0x31553b));
+    leaf.scale.set(.7,1.35,.5);leaf.position.set(Math.cos(a)*.19,.75,Math.sin(a)*.19);leaf.rotation.z=-Math.cos(a)*.5;pl.add(leaf);
+  }
+}
+for(let x=-8;x<=8;x+=1){
+  // Small warm floor lanterns along the front edge
+  if(Math.abs(x)>1.5){const l=new THREE.PointLight(0xffa34f,.45,2.4);l.position.set(x,.35,7.3);scene.add(l)}
+}
+
+// floating motes
+const moteGeo=new THREE.BufferGeometry(),motePos=[];for(let i=0;i<150;i++)motePos.push((Math.random()-.5)*18,Math.random()*5,(Math.random()-.5)*14);
+moteGeo.setAttribute('position',new THREE.Float32BufferAttribute(motePos,3));const motes=new THREE.Points(moteGeo,new THREE.PointsMaterial({color:0xffc36d,size:.045,transparent:true,opacity:.6}));scene.add(motes);
+// fireworks particle system
+let bursts=[];function firework(){
+ const x=(Math.random()-.5)*14,y=5+Math.random()*5,z=-5-Math.random()*5;
+ const palette=[0xffc45e,0x8fdb9a,0xff6b67,0xd7e5ff,0xff8d50];
+ const col=palette[Math.floor(Math.random()*palette.length)],count=180;
+ const geo=new THREE.BufferGeometry(),pos=new Float32Array(count*3),vel=[];
+ for(let i=0;i<count;i++){
+   const pattern=Math.floor(Math.random()*3),a=Math.random()*Math.PI*2,u=Math.random()*2-1;
+   const s=pattern===0?1.0+Math.random()*2.5:pattern===1?2.0+Math.random()*.45:.8+Math.random()*3.8;
+   const q=Math.sqrt(1-u*u);vel.push(new THREE.Vector3(Math.cos(a)*q*s,u*s,Math.sin(a)*q*s));
+   pos[i*3]=pos[i*3+1]=pos[i*3+2]=0;
+ }
+ geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+ const points=new THREE.Points(geo,new THREE.PointsMaterial({color:col,size:.075,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false}));
+ points.position.set(x,y,z);scene.add(points);bursts.push({points,vel,life:2.3,max:2.3});
+}
+
+function groundFountain(x,z){
+ const count=85,geo=new THREE.BufferGeometry(),pos=new Float32Array(count*3),vel=[];
+ for(let i=0;i<count;i++){pos[i*3]=pos[i*3+1]=pos[i*3+2]=0;const a=(Math.random()-.5)*.9-Math.PI/2,s=2+Math.random()*4;vel.push(new THREE.Vector3(Math.cos(a)*s,Math.abs(Math.sin(a))*s, (Math.random()-.5)*1.2))}
+ geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+ const points=new THREE.Points(geo,new THREE.PointsMaterial({color:0xffc66e,size:.065,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false}));
+ points.position.set(x,.12,z);scene.add(points);bursts.push({points,vel,life:1.5,max:1.5});
+ crackerSound('launch');
+}
+
+function toast(s){const t=document.querySelector('#toast');t.textContent=s;t.style.opacity=1;clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.opacity=0,2100)}
+let audioOn=true,audioCtx=null;function chime(freq=660,dur=.16){if(!audioOn)return;try{audioCtx??=new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),gain=audioCtx.createGain();o.type='sine';o.frequency.value=freq;gain.gain.setValueAtTime(.0001,audioCtx.currentTime);gain.gain.exponentialRampToValueAtTime(.08,audioCtx.currentTime+.02);gain.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+dur);o.connect(gain);gain.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur)}catch(e){}}
+
+// Layered festive firework sound design. Synthesized locally; no external audio asset required.
+function ensureAudio(){
+ if(!audioOn)return null;
+ try{
+  audioCtx??=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  return audioCtx;
+ }catch(e){return null}
+}
+function noiseBurst(ctx,when,duration,volume,filterType,frequency,q=0.7){
+ const n=Math.max(1,Math.floor(ctx.sampleRate*duration)),buffer=ctx.createBuffer(1,n,ctx.sampleRate),data=buffer.getChannelData(0);
+ for(let i=0;i<n;i++){const t=i/n;data[i]=(Math.random()*2-1)*Math.pow(1-t,2.1)}
+ const src=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+ src.buffer=buffer;filter.type=filterType;filter.frequency.setValueAtTime(frequency,when);filter.Q.value=q;
+ gain.gain.setValueAtTime(.0001,when);gain.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),when+.006);gain.gain.exponentialRampToValueAtTime(.0001,when+duration);
+ src.connect(filter);filter.connect(gain);gain.connect(ctx.destination);src.start(when);src.stop(when+duration+.02);
+}
+function crackerSound(kind='burst'){
+ const ctx=ensureAudio();if(!ctx)return;
+ const now=ctx.currentTime;
+ // Short low-end thump
+ const osc=ctx.createOscillator(),gain=ctx.createGain();
+ osc.type='sine';osc.frequency.setValueAtTime(kind==='launch'?170:105,now);osc.frequency.exponentialRampToValueAtTime(36,now+.22);
+ gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(kind==='launch'?.09:.18,now+.008);gain.gain.exponentialRampToValueAtTime(.0001,now+.25);
+ osc.connect(gain);gain.connect(ctx.destination);osc.start(now);osc.stop(now+.27);
+ // Bright transient snap and airy body
+ noiseBurst(ctx,now,.32,.19,'highpass',kind==='launch'?1200:950);
+ noiseBurst(ctx,now+.025,.55,.105,'bandpass',1900,1.1);
+ // Fine crackles, staggered for a natural sparkling tail
+ for(let i=0;i<9;i++){const at=now+.08+i*.038+Math.random()*.025;noiseBurst(ctx,at,.045,.035,'highpass',2400+Math.random()*2400)}
+ if(kind==='launch'){
+  const wh=ctx.createOscillator(),wg=ctx.createGain();wh.type='sawtooth';wh.frequency.setValueAtTime(380,now);wh.frequency.exponentialRampToValueAtTime(1250,now+.34);
+  wg.gain.setValueAtTime(.0001,now);wg.gain.exponentialRampToValueAtTime(.035,now+.06);wg.gain.exponentialRampToValueAtTime(.0001,now+.37);
+  wh.connect(wg);wg.connect(ctx.destination);wh.start(now);wh.stop(now+.39);
+ }
+}
+function celebrationBurst(count=4,spacing=260){
+ for(let i=0;i<count;i++)setTimeout(()=>{firework();crackerSound(i%3===0?'launch':'burst')},i*spacing);
+}
+
+let started=false,won=0,finale=false;
+try{won=Number(localStorage.getItem('diwali-gates')||0);won=Math.max(0,Math.min(4,won));}catch(e){won=0}document.querySelector('#count').textContent=won+' / 4';
+function ignite(){if(started)return;started=true;if(audioOn){jethaLoop.volume=.34;jethaLoop.play().catch(()=>toast('Tap SOUND ON to start the Jethalal meme audio.'))}heroD.lit=true;heroD.light.intensity=3;heroD.f.scale.set(1.2,1.25,1.2);chime(880);document.querySelector('#intro').style.opacity=0;setTimeout(()=>document.querySelector('#intro').remove(),1200);toast('The courtyard is awake. Explore the four gates.');petalRain();celebrationBurst(3,420);document.querySelector('#hint').textContent='CLICK A GATE TO PLAY · DRAG TO ORBIT · SCROLL TO ZOOM';}
+document.querySelector('#enter').onclick=ignite;
+const jethaLoop=document.querySelector('#jethaLoop');
+document.querySelector('#sound').onclick=()=>{audioOn=!audioOn;document.querySelector('#sound').textContent=audioOn?'♫ SOUND ON':'♫ SOUND OFF';if(audioOn&&started){jethaLoop.volume=.34;jethaLoop.play().catch(()=>toast('Tap again to enable the Diwali audio.'));ensureAudio()}else{jethaLoop.pause()}if(audioOn)chime(520)};
+document.querySelector('#fireworks').onclick=()=>{ensureAudio();celebrationBurst(8,220);for(let i=0;i<3;i++)setTimeout(()=>groundFountain((Math.random()-.5)*9,6.4),i*450);chime(740);toast('The Diwali sky show has begun!')}
+document.querySelector('#cameraReset').onclick=()=>{window.__diwaliCamera?.reset();toast('Camera view reset.')};
+document.querySelector('#photo').onclick=()=>{try{const a=document.createElement('a');a.download='diwali-courtyard.png';a.href=renderer.domElement.toDataURL('image/png');a.click();toast('Courtyard photo saved.')}catch(e){toast('Photo capture is unavailable in this browser.')}};
+document.querySelector('#full').onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()};
+document.querySelector('#reset').onclick=()=>{won=0;try{localStorage.removeItem('diwali-gates')}catch(e){}diyas.forEach(d=>{d.lit=false;d.light.intensity=0});finale=false;gates.forEach(g=>{g.open=false;g.glow.intensity=0;g.g.scale.y=1;g.g.position.y=.05});document.querySelector('#count').textContent='0 / 4';toast('The courtyard has been reset.');};
+const modal=document.querySelector('#modal');document.querySelector('#close').onclick=()=>modal.style.display='none';
+function openGame(g){if(g.open){toast('This gate is already awakened ✦');return}modal.style.display='flex';document.querySelector('#gamekicker').textContent='GATE '+(g.index+1)+' · COURTYARD CHALLENGE';document.querySelector('#gametitle').textContent=g.data.name;document.querySelector('#gamedesc').textContent=g.data.desc;const area=document.querySelector('#gamearea');area.innerHTML='';
+ if(g.index===0)memoryGame(area,g);
+ if(g.index===1)rhythmGame(area,g);
+ if(g.index===2)matchGame(area,g);
+ if(g.index===3)pathGame(area,g);
+}
+gates.slice(0,won).forEach(g=>{g.open=true;g.g.scale.y=.15;g.g.position.y=-.4;g.glow.intensity=2.2});
+function win(g){if(g.open)return;g.open=true;g.glow.intensity=3;g.g.scale.y=.15;g.g.position.y=-.4;won++;try{localStorage.setItem('diwali-gates',String(won));localStorage.setItem('diwali-best-gates',String(Math.max(won,Number(localStorage.getItem('diwali-best-gates')||0))))}catch(e){}document.querySelector('#count').textContent=won+' / 4';chime(990,.3);toast(g.data.name+' awakened!');document.querySelector('#gamedesc').textContent='The gate opens. A little more light enters the courtyard. Your progress is saved on this device.';document.querySelector('#gamearea').innerHTML='<div style="font-size:42px;margin:18px">✦ 🪔 ✦</div><p>You did it. One more piece of the celebration is complete.</p><button class="primary" id="continue">CONTINUE EXPLORING</button>';document.querySelector('#continue').onclick=()=>{modal.style.display='none';if(won===4)showFinale()}}
+function memoryGame(area,g){area.innerHTML='<p>Watch the sequence, then repeat it.</p><div class="sequence">'+[0,1,2,3,4].map(i=>'<span class="lamp" id="l'+i+'">🪔</span>').join('')+'</div><button class="primary" id="startmem">SHOW SEQUENCE</button><div class="gamegrid" id="memgrid" style="grid-template-columns:repeat(5,1fr)"></div>';let seq=Array.from({length:5},()=>Math.floor(Math.random()*5)),input=[],busy=false;const grid=area.querySelector('#memgrid');for(let i=0;i<5;i++){let b=document.createElement('button');b.className='tile';b.textContent='🪔';b.onclick=()=>{if(busy||!area.querySelector('#startmem').disabled)return;input.push(i);chime(400+i*90);if(input[input.length-1]!==seq[input.length-1]){input=[];toast('Not quite — try the sequence again.');return}if(input.length===5)win(g)};grid.appendChild(b)}area.querySelector('#startmem').onclick=async()=>{busy=true;area.querySelector('#startmem').disabled=true;for(let n of seq){area.querySelector('#l'+n).classList.add('on');chime(500+n*100);await new Promise(r=>setTimeout(r,650));area.querySelector('#l'+n).classList.remove('on');await new Promise(r=>setTimeout(r,180))}busy=false;toast('Your turn — repeat the lights!')}}
+function rhythmGame(area,g){area.innerHTML='<p>Tap the diya when its glow reaches the golden ring. Land 3 perfect hits.</p><div style="height:145px;display:grid;place-items:center"><button id="target" style="width:112px;height:112px;border-radius:50%;border:3px solid #d6a95c;background:radial-gradient(circle,#fff1b4,#bd682c 45%,#391d24 70%);box-shadow:0 0 20px #e9aa4c;cursor:pointer;font-size:42px">🪔</button></div><p id="hits">Perfect hits: 0 / 3</p><button class="secondary" id="beginrhythm">START</button>';let hits=0,phase=0,run=false;let target=area.querySelector('#target');area.querySelector('#beginrhythm').onclick=()=>{run=true;toast('Tap when the glow peaks!')};target.onclick=()=>{if(!run)return;let good=Math.sin(phase)>0.72;if(good){hits++;chime(800+hits*100);target.style.boxShadow='0 0 45px #ffe08a';}else{hits=Math.max(0,hits-1);toast('A little early or late — try again.')}area.querySelector('#hits').textContent='Perfect hits: '+hits+' / 3';if(hits>=3){run=false;win(g)}};g._rhythm=()=>{if(run){phase+=.12;let s=12+Math.max(0,Math.sin(phase))*34;target.style.boxShadow=`0 0 ${s}px #ffbd54`}}}
+function matchGame(area,g){let vals=['🪔','🍬','🪷','🥻','🪷','🍬','🥻','🪔'].sort(()=>Math.random()-.5),first=null,lock=false,matched=0;area.innerHTML='<p>Reveal two tiles at a time and find all four pairs.</p><div class="gamegrid" id="matchgrid"></div>';vals.forEach((v,i)=>{let b=document.createElement('button');b.className='tile';b.textContent='✦';b.onclick=()=>{if(lock||b.classList.contains('done')||b.textContent!=='✦')return;b.textContent=v;chime(520+i*20);if(first===null){first={b,v}}else{if(first.v===v){first.b.classList.add('done');b.classList.add('done');matched++;first=null;if(matched===4)win(g)}else{lock=true;let f=first;first=null;setTimeout(()=>{f.b.textContent='✦';b.textContent='✦';lock=false},700)}}};area.querySelector('#matchgrid').appendChild(b)})}
+function pathGame(area,g){area.innerHTML='<p>Light all five diyas in order, from the first to the last.</p><div class="gamegrid" id="pathgrid" style="grid-template-columns:repeat(5,1fr)"></div><p id="pathstatus">Light 1 of 5</p>';let order=[2,0,4,1,3],step=0;for(let i=0;i<5;i++){let b=document.createElement('button');b.className='tile';b.textContent='🪔';b.onclick=()=>{if(i===order[step]){b.classList.add('done');step++;chime(550+step*100);area.querySelector('#pathstatus').textContent='Light '+Math.min(step+1,5)+' of 5';if(step===5)win(g)}else{step=0;area.querySelectorAll('.tile').forEach(x=>x.classList.remove('done'));area.querySelector('#pathstatus').textContent='Start again — Light 1 of 5';toast('The path broke. Try again.')}};area.querySelector('#pathgrid').appendChild(b)}}
+function showFinale(){finale=true;modal.style.display='flex';document.querySelector('#gamekicker').textContent='A FESTIVAL OF LIGHT';document.querySelector('#gametitle').textContent='शुभ दीपावली · Happy Diwali';document.querySelector('#gamedesc').textContent='May your home be filled with light, your heart with peace, and the year ahead with new beginnings.';document.querySelector('#gamearea').innerHTML='<div style="font-size:48px;margin:16px">🪔 ✨ 🪷 ✨ 🪔</div><button class="primary" id="celebrate">CELEBRATE WITH FIREWORKS</button><button class="secondary" id="again">WATCH AGAIN</button>';document.querySelector('#celebrate').onclick=()=>{
+ ensureAudio();petalRain();chime(880,.3);
+ let n=0;const timer=setInterval(()=>{celebrationBurst(2,120);n++;if(n>=15)clearInterval(timer)},1800);
+ toast('The Grand Diwali sky show has begun!');
+};document.querySelector('#again').onclick=()=>{modal.style.display='none';document.querySelector('#reset').click();camera.position.set(0,5.6,14.5)};for(let i=0;i<8;i++)setTimeout(firework,i*240)}
+
+// ── Greeting Studio and sky lantern celebration ───────────────────────
+const greetingModal=document.querySelector('#greetingModal'),greetingBody=document.querySelector('#greetingBody');
+document.querySelector('#greetingClose').onclick=()=>greetingModal.style.display='none';greetingModal.addEventListener('click',e=>{if(e.target===greetingModal)greetingModal.style.display='none'});
+function openGreeting(){
+ greetingBody.innerHTML=`<input id="greetName" placeholder="Enter your name" maxlength="28" style="width:100%;padding:12px;border-radius:12px;border:1px solid #d7b16c88;background:#0c1428;color:#fff0cf;margin:8px 0">
+ <canvas id="greetCanvas" width="1000" height="620" style="width:100%;border-radius:16px;border:1px solid #d7b16c88;background:#10182b"></canvas>
+ <button class="primary" id="greetDownload">Download greeting card</button>`;
+ const c=document.querySelector('#greetCanvas'),ctx=c.getContext('2d'),input=document.querySelector('#greetName');
+ function draw(){const g=ctx.createLinearGradient(0,0,1000,620);g.addColorStop(0,'#101a35');g.addColorStop(1,'#39251d');ctx.fillStyle=g;ctx.fillRect(0,0,1000,620);ctx.strokeStyle='#e9bd70';ctx.lineWidth=5;ctx.strokeRect(24,24,952,572);ctx.strokeRect(40,40,920,540);ctx.textAlign='center';ctx.fillStyle='#f3d18b';ctx.font='bold 42px Georgia';ctx.fillText('✦ A FESTIVAL OF LIGHT ✦',500,140);ctx.font='bold 82px Georgia';ctx.fillText('Happy Diwali',500,285);ctx.font='64px serif';ctx.fillText('🪔  ✨  🪷  ✨  🪔',500,390);ctx.font='32px Georgia';ctx.fillStyle='#fff0cf';ctx.fillText('With warm wishes from '+(input.value.trim()||'Your Friend'),500,500)}
+ input.oninput=draw;draw();document.querySelector('#greetDownload').onclick=()=>{draw();const a=document.createElement('a');a.download='personalized-happy-diwali.png';a.href=c.toDataURL('image/png');a.click();toast('Greeting card downloaded ✨')};
+}
+document.querySelector('#greeting').onclick=()=>{openGreeting();greetingModal.style.display='flex'};
+
+// Lanterns rise through the scene with a warm glow and gentle sway.
+const skyLanterns=[];
+function releaseLantern(){
+ const group=new THREE.Group();
+ const body=new THREE.Mesh(new THREE.CylinderGeometry(.22,.34,.72,12,1,true),new THREE.MeshBasicMaterial({color:0xe9a94e,transparent:true,opacity:.7,side:THREE.DoubleSide}));
+ group.add(body);
+ const glow=new THREE.PointLight(0xffa64a,1.6,5);glow.position.y=-.12;group.add(glow);
+ group.position.set((Math.random()-.5)*9,1+Math.random()*1.5,Math.random()*-5-1);
+ scene.add(group);skyLanterns.push({group,glow,life:0,speed:1.1+Math.random()*.7,drift:(Math.random()-.5)*.3});
+}
+document.querySelector('#lanterns').onclick=()=>{ensureAudio();for(let i=0;i<5;i++)setTimeout(releaseLantern,i*320);chime(720,.25);toast('Five lanterns are rising into the Diwali sky 🏮')};
+// pointer picking
+const ray=new THREE.Raycaster(),mouse=new THREE.Vector2();let down=null,dragging=false;
+renderer.domElement.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};dragging=false});
+renderer.domElement.addEventListener('pointerup',e=>{if(!down)return;let dx=e.clientX-down.x,dy=e.clientY-down.y;if(Math.hypot(dx,dy)<7){mouse.x=e.clientX/innerWidth*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;ray.setFromCamera(mouse,camera);let targets=[...gates.map(g=>g.g),...diyas.map(d=>d.g)];let hits=ray.intersectObjects(targets,true);if(hits.length){let obj=hits[0].object;let gate=gates.find(g=>{let p=obj;while(p&&p.parent!==g.g)p=p.parent;return p&&p.parent===g.g});let diyaHit=diyas.find(d=>{let p=obj;while(p&&p.parent!==d.g)p=p.parent;return p&&p.parent===d.g});if(gate)openGame(gate);else if(diyaHit&&started){diyaHit.lit=!diyaHit.lit;diyaHit.light.intensity=diyaHit.lit?2.3:0;chime(diyaHit.lit?880:440);toast(diyaHit.lit?'Diya lit ✨':'Diya gently dimmed')}}}down=null});
+let isOrbit=false,last={x:0,y:0},theta=0,phi=.27,radius=15.5;window.__diwaliCamera={get radius(){return radius},set radius(v){radius=Math.max(10,Math.min(23,v))},reset(){theta=0;phi=.27;radius=15.5}};renderer.domElement.addEventListener('pointerdown',e=>{isOrbit=true;last={x:e.clientX,y:e.clientY}});window.addEventListener('pointerup',()=>isOrbit=false);window.addEventListener('pointermove',e=>{if(isOrbit&&down&&Math.hypot(e.clientX-down.x,e.clientY-down.y)>7){theta-=(e.clientX-last.x)*.004;phi=Math.max(.08,Math.min(.65,phi+(e.clientY-last.y)*.002));last={x:e.clientX,y:e.clientY}}});
+renderer.domElement.addEventListener('wheel',e=>{radius=Math.max(10,Math.min(23,radius+e.deltaY*.012))},{passive:true});
+let lastFrame=0;
+function animate(t){
+ requestAnimationFrame(animate);const dt=Math.min(.04,(t-lastFrame)/1000||.016);lastFrame=t;const time=t*.001;
+ camera.position.set(Math.sin(theta)*radius,3.2+Math.sin(phi)*radius*.27,Math.cos(theta)*radius);camera.lookAt(0,1.25,-1.2);
+ rangoli.rotation.y=Math.sin(time*.22)*.035;
+ diyas.forEach((d,i)=>{if(d.lit){d.light.intensity=1.65+Math.sin(time*5+i)*.32;d.f.scale.y=.92+Math.sin(time*7+i)*.1}else{d.light.intensity=0}});
+ motes.rotation.y=time*.018;stars.rotation.y=time*.002;
+ gates.forEach((g,i)=>{g.glow.intensity=g.open?2.2:Math.max(0,.12+Math.sin(time*2+i)*.12);if(!g.open){g.g.rotation.y=Math.sin(time*.7+i*1.4)*.035;g.g.position.y=.05+Math.sin(time*1.1+i)*.018}});
+ if(typeof gates[1]._rhythm==='function')gates[1]._rhythm();
+ bursts=bursts.filter(b=>{
+   b.life-=dt;const arr=b.points.geometry.attributes.position.array;
+   for(let i=0;i<b.vel.length;i++){const v=b.vel[i];v.y-=2.0*dt;arr[i*3]+=v.x*dt;arr[i*3+1]+=v.y*dt;arr[i*3+2]+=v.z*dt}
+   b.points.geometry.attributes.position.needsUpdate=true;b.points.material.opacity=Math.max(0,b.life/b.max);
+   b.points.material.size=.035+.045*Math.max(0,b.life/b.max);
+   if(b.life<=0){scene.remove(b.points);b.points.geometry.dispose();b.points.material.dispose();return false}return true
+ });
+ for(let i=skyLanterns.length-1;i>=0;i--){const l=skyLanterns[i];l.life+=dt;l.group.position.y+=l.speed*dt;l.group.position.x+=Math.sin(time+i)*l.drift*dt;l.group.rotation.z=Math.sin(time*1.5+i)*.08;l.glow.intensity=1.3+Math.sin(time*4+i)*.25;if(l.life>13){scene.remove(l.group);l.group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()});skyLanterns.splice(i,1)}}
+ renderer.render(scene,camera)
+}
+animate(0);
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+</script>
+<video id="jethaLoop" preload="auto" playsinline loop style="position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;left:-10px;top:-10px"><source src="https://humornama.com/wp-content/uploads/2021/11/Happy-Diwali-Meme-on-Jethalal.mp4" type="video/mp4"></video>
+
+
+<style>
+:root{scroll-behavior:smooth}
+button,.pill,.tile{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.pill,.primary,.secondary,.tile{transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s,background .28s}
+.pill:active,.primary:active,.secondary:active{transform:scale(.96)}
+.panel{animation:panelIn .45s cubic-bezier(.18,.8,.22,1) both}
+@keyframes panelIn{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.tile{transform:perspective(600px) rotateY(0deg);box-shadow:0 5px 14px #0005}
+.tile:hover{transform:perspective(600px) rotateY(8deg) translateY(-3px);box-shadow:0 10px 22px #0008,0 0 16px #e9bd7044}
+.tile:active{transform:perspective(600px) rotateY(180deg) scale(.97)}
+.tile.done{animation:tileGlow .5s ease}
+@keyframes tileGlow{50%{transform:scale(1.08) rotateY(180deg);box-shadow:0 0 25px #ffcf72}}
+#hint{transition:opacity .5s}
+#toast{box-shadow:0 8px 30px #0008}
+@media(max-width:600px){
+ .top{align-items:flex-start}.brand{padding-top:10px}
+ .hud{bottom:calc(12px + env(safe-area-inset-bottom));left:12px}
+ .controls{bottom:calc(12px + env(safe-area-inset-bottom));right:12px}
+ .hint{bottom:82px;font-size:10px;max-width:88vw;line-height:1.5}
+ .progress{padding:10px 12px;font-size:11px}
+ .controls .pill{padding:9px 10px;font-size:11px}
+ .panel{max-height:86dvh;overflow:auto}
+ .gamegrid{gap:6px}
+}
+</style>
+
+<script>
+(()=>{
+ const video=document.getElementById('jethaLoop');
+ video.addEventListener('ended',()=>{if(!video.paused)video.play().catch(()=>{})});
+ video.addEventListener('error',()=>{const b=document.getElementById('sound');if(b)b.title='The hosted meme audio is temporarily unavailable.'});
+ window.petalRain=function(){
+   const colors=['#f2c879','#f6e7c2','#d96c55','#e6a8a0'];
+   for(let i=0;i<28;i++){
+     const el=document.createElement('i');el.textContent=Math.random()>.5?'✿':'✧';
+     el.style.cssText=`position:fixed;z-index:9;left:${Math.random()*100}vw;top:-25px;color:${colors[i%colors.length]};font-style:normal;font-size:${12+Math.random()*17}px;pointer-events:none;text-shadow:0 0 10px #ffd98a;transition:transform ${4+Math.random()*4}s linear,opacity 1s`;
+     document.body.appendChild(el);
+     requestAnimationFrame(()=>{el.style.transform=`translate(${(Math.random()-.5)*150}px,${innerHeight+70}px) rotate(${Math.random()*720}deg)`;el.style.opacity='.15'});
+     setTimeout(()=>el.remove(),8500);
+   }
+ };
+ document.getElementById('fireworks')?.addEventListener('click',()=>{window.petalRain?.()});
+})();
+</script>
+
+<style>
+:root{--gold:#e9bd70}
+#scene canvas{width:100%;height:100%;display:block}
+.controls{max-width:calc(100vw - 24px);flex-wrap:wrap;justify-content:flex-end}
+.pill{box-shadow:0 5px 18px #0003}
+#cameraReset,#photo,#full{display:inline-flex}
+.progress{box-shadow:0 8px 26px #0004}
+.gamegrid .tile{min-width:0}
+@media(max-width:600px){
+ .top{gap:8px}.top .pill{font-size:11px}
+ .controls{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));gap:6px}
+ .controls .pill{font-size:10px;padding:8px 9px}
+ .hud{bottom:calc(58px + env(safe-area-inset-bottom))}
+ .hint{bottom:calc(110px + env(safe-area-inset-bottom))}
+ .panel{width:min(520px,96vw);max-height:82dvh;overflow-y:auto}
+ .gamegrid{max-width:min(340px,88vw)}
+}
+@media(prefers-reduced-motion:reduce){.panel,.tile,.pill{animation:none!important;transition:none!important}}
+</style>
+
+<script>
+(()=>{
+ const canvas=document.querySelector('#scene canvas');if(!canvas)return;
+ let pinchStart=0,initialRadius=15.5;
+ canvas.addEventListener('touchstart',e=>{if(e.touches.length===2){pinchStart=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);initialRadius=window.__diwaliCamera?.radius??15.5}},{passive:true});
+ canvas.addEventListener('touchmove',e=>{if(e.touches.length===2&&pinchStart){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);const factor=pinchStart/Math.max(1,d);const r=Math.max(10,Math.min(23,initialRadius*factor));if(window.__diwaliCamera)window.__diwaliCamera.radius=r}},{passive:true});
+})();
+</script>
+
+<style>
+.feature-panel{max-height:88dvh;overflow:auto}
+
+@media(max-width:600px){.feature-panel{width:96vw;padding:20px 14px}.feature-panel{width:96vw}}
+</style>
+</body></html>
